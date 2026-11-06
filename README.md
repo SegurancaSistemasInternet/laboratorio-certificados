@@ -1,7 +1,5 @@
 # Laboratório: a AC da turma — do par de chaves ao .pfx
 
-[![Abrir no GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/SegurancaSistemasInternet/laboratorio-certificados?quickstart=1)
-
 > Disciplina **Segurança de Sistemas** · Atividade prática sobre certificados digitais
 
 Neste laboratório você vai usar o **OpenSSL** para criar uma cadeia de certificados para o **PortalAgenda** da Cais Azul, empresa fictícia de logística portuária usada nas aulas. Depois, vai gerar um pacote **`.pfx`** e utilizá-lo em um servidor HTTPS.
@@ -10,10 +8,11 @@ Toda a revisão teórica, o roteiro e as orientações de entrega estão neste R
 
 ## Como começar
 
-1. Acesse o [repositório da atividade](https://github.com/SegurancaSistemasInternet/laboratorio-certificados). Se o professor orientar o uso de uma cópia, use **Use this template → Create a new repository**, ou aceite o convite do GitHub Classroom.
-2. No repositório que você utilizará, clique em **Code → Codespaces → Create codespace on main**. O selo acima abre um Codespace diretamente a partir do repositório da atividade.
-3. Leia a revisão teórica abaixo e, depois, acesse o [início das atividades práticas](#etapa-0--preparar-o-ambiente) para executar o roteiro no terminal do Codespace.
-4. Ao terminar, envie as evidências na **equipe do Teams da disciplina**, no local indicado pelo professor.
+1. Acesse o [repositório modelo da atividade](https://github.com/SegurancaSistemasInternet/laboratorio-certificados) e leia a revisão teórica abaixo.
+2. Depois da leitura, acesse o [início das atividades práticas](#etapa-0--preparar-o-ambiente). A etapa 0 orienta a criação do **seu próprio repositório a partir do template** e a abertura do Codespace nele.
+3. Execute o roteiro no seu Codespace e envie as evidências na **equipe do Teams da disciplina**, no local indicado pelo professor.
+
+**Não abra o Codespace no repositório modelo.** Use o menu **Code → Codespaces** do seu repositório, criado na sua conta.
 
 ## Revisão teórica
 
@@ -106,11 +105,11 @@ No OpenSSL 3, a exportação padrão protege a chave privada e os certificados c
 
 ### Tempo previsto
 
-Reserve cerca de **75 minutos para a prática**, após a revisão teórica. Os tempos abaixo incluem a execução dos comandos, os checkpoints e a coleta das evidências.
+Reserve cerca de **80 minutos para a prática**, após a revisão teórica. Os tempos abaixo incluem a criação do repositório do aluno, a preparação do Codespace, a execução dos comandos, os checkpoints e a coleta das evidências. A primeira criação do Codespace pode levar alguns minutos adicionais.
 
 | Etapa | Atividade | Tempo estimado |
 |---|---|---|
-| 0 | Preparar o ambiente | 5 min |
+| 0 | Criar seu repositório a partir do template e preparar o Codespace | 10 min |
 | 1 | Criar a AC raiz | 8 min |
 | 2 | Criar a AC intermediária | 8 min |
 | 3 | Gerar a chave e o CSR do site | 7 min |
@@ -119,7 +118,7 @@ Reserve cerca de **75 minutos para a prática**, após a revisão teórica. Os t
 | 6 | Gerar e inspecionar o PFX; coletar a evidência 1 | 10 min |
 | 7 | Testar o servidor HTTPS; coletar a evidência 2 | 15 min |
 | 8 | Enviar as evidências no Teams e encerrar | 5 min |
-| **Total** | **Atividade prática** | **75 min** |
+| **Total** | **Atividade prática** | **80 min** |
 
 [Iniciar as atividades práticas — Etapa 0](#etapa-0--preparar-o-ambiente)
 
@@ -133,7 +132,15 @@ As evidências serão coletadas em apenas dois momentos: **ao final da etapa 6**
 
 ### Etapa 0 — Preparar o ambiente
 
-O terminal do Codespace já deve abrir em `trabalho/`. Confira:
+1. Entre na sua conta do GitHub e abra o [repositório modelo](https://github.com/SegurancaSistemasInternet/laboratorio-certificados).
+2. Clique em **Use this template → Create a new repository**. Não use **Fork**: nesta atividade, a cópia deve ser criada a partir do template.
+3. Em **Owner**, selecione **sua conta pessoal**. Em **Repository name**, use `laboratorio-certificados` ou outro nome indicado pelo professor. Se esse nome já existir na sua conta, escolha um nome disponível.
+4. Defina a visibilidade conforme a orientação do professor e clique em **Create repository**.
+5. Confira que o endereço do novo repositório tem o formato `https://github.com/SEU-USUARIO/SEU-REPOSITORIO`, e não começa com `https://github.com/SegurancaSistemasInternet/`.
+6. **No seu novo repositório**, clique em **Code → Codespaces → Create codespace on main** e aguarde a preparação. Se solicitado, autorize a criação do Codespace na sua conta.
+7. Quando o editor abrir, use o terminal na parte inferior. Se ele não aparecer, selecione **Terminal → New Terminal**.
+
+O terminal do seu Codespace já deve abrir em `trabalho/`. Confira:
 
 ```bash
 pwd
@@ -146,7 +153,7 @@ O caminho deve terminar em `/trabalho`, e a versão deve ser **OpenSSL 3.x**. Se
 cd /workspaces/*/trabalho
 ```
 
-**Checkpoint 0 — Ambiente pronto:** execute novamente `pwd` e `openssl version`. Avance quando o caminho terminar em `/trabalho` e a versão for OpenSSL 3.x.
+**Checkpoint 0 — Repositório e ambiente prontos:** confirme que o repositório foi criado na sua conta e que o Codespace foi aberto a partir dele. Execute novamente `pwd` e `openssl version`: o caminho deve ser `/workspaces/SEU-REPOSITORIO/trabalho` e a versão deve ser OpenSSL 3.x. Avance somente após essas conferências.
 
 ### Etapa 1 — Criar a AC raiz
 
