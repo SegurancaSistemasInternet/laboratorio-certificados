@@ -50,7 +50,7 @@ flowchart LR
     I -->|assina| S["agenda.caisazul.test"]
 ```
 
-O cliente verifica essa cadeia até chegar a uma raiz em que confia. A raiz criada nesta atividade **não é confiável fora do laboratório**: vamos indicá-la explicitamente ao OpenSSL e ao `curl`.
+O cliente verifica essa cadeia até chegar a uma raiz em que confia. A raiz criada nesta atividade **não é confiável fora do laboratório**: vamos indicá-la explicitamente ao OpenSSL na validação local.
 
 O conjunto de autoridades, certificados e regras é uma **PKI** (infraestrutura de chaves públicas). No Brasil, a **ICP-Brasil** é a infraestrutura oficial de certificação digital.
 
@@ -105,7 +105,7 @@ No OpenSSL 3, a exportação padrão protege a chave privada e os certificados c
 
 ### Tempo previsto
 
-Reserve cerca de **80 minutos para a prática**, após a revisão teórica. Os tempos abaixo incluem a criação do repositório do aluno, a preparação do Codespace, a execução dos comandos, os checkpoints e a coleta das evidências. A primeira criação do Codespace pode levar alguns minutos adicionais.
+Reserve cerca de **85 minutos para a prática**, após a revisão teórica. Os tempos abaixo incluem a criação do repositório do aluno, a preparação do Codespace, a execução dos comandos, os checkpoints e a coleta das evidências. A primeira criação do Codespace pode levar alguns minutos adicionais.
 
 | Etapa | Atividade | Tempo estimado |
 |---|---|---|
@@ -116,9 +116,9 @@ Reserve cerca de **80 minutos para a prática**, após a revisão teórica. Os t
 | 4 | Emitir o certificado do site | 7 min |
 | 5 | Verificar a cadeia | 10 min |
 | 6 | Gerar e inspecionar o PFX; coletar a evidência 1 | 10 min |
-| 7 | Testar o servidor HTTPS; coletar a evidência 2 | 15 min |
+| 7 | Abrir o servidor HTTPS no navegador, validar a conexão e coletar a evidência 2 | 20 min |
 | 8 | Enviar as evidências no Teams e encerrar | 5 min |
-| **Total** | **Atividade prática** | **80 min** |
+| **Total** | **Atividade prática** | **85 min** |
 
 [Iniciar as atividades práticas — Etapa 0](#etapa-0--preparar-o-ambiente)
 
@@ -299,24 +299,21 @@ openssl s_server -accept 8443 -www \
   -cert recebido.crt -key recebido.key -cert_chain recebido-cadeia.crt
 ```
 
-Deixe o servidor rodando. No **primeiro terminal**, tente acessar sem indicar a raiz:
+Deixe o servidor rodando nesse terminal e abra a página pelo navegador:
 
-```bash
-curl --noproxy '*' --resolve agenda.caisazul.test:8443:127.0.0.1 \
-  https://agenda.caisazul.test:8443/
-```
+1. No painel inferior do Codespace, abra a aba **PORTS / PORTAS**.
+2. Se a porta **8443** não aparecer, clique em **Forward a Port / Encaminhar uma porta** e digite `8443`.
+3. Clique com o botão direito na linha da porta **8443** e selecione **Change Port Protocol → HTTPS**. O protocolo padrão é HTTP e precisa ser alterado, pois o servidor deste roteiro usa HTTPS.
+4. Mantenha a visibilidade em **Private / Privada**. Não é necessário tornar a porta pública para realizar a atividade.
+5. Na linha da porta, clique em **Open in Browser / Abrir no navegador**. Se solicitado, entre com a mesma conta do GitHub usada no Codespace.
 
-A conexão deve ser recusada por falta de confiança na raiz, com um erro de certificado. Agora indique a raiz confiável:
+A página de status do OpenSSL deve aparecer, com informações da conexão e dos algoritmos disponíveis. O endereço terá o formato `https://NOME-DO-CODESPACE-8443.app.github.dev`. Use o endereço fornecido pelo painel, não `localhost` nem `agenda.caisazul.test` no navegador do seu computador.
 
-```bash
-curl --noproxy '*' --cacert raiz.crt \
-  --resolve agenda.caisazul.test:8443:127.0.0.1 \
-  https://agenda.caisazul.test:8443/
-```
+Se a página não abrir, confira que o servidor continua rodando, que a porta encaminhada é **8443** e que o protocolo está em **HTTPS**. Depois, tente **Open in Browser** novamente. Não ignore alertas de certificado nem instale a raiz da turma no navegador para resolver esse acesso.
 
-A página de status do OpenSSL deve aparecer. `--resolve` aponta o domínio de teste para a própria máquina; `--noproxy '*'` mantém esse acesso local fora de proxies.
+> **Atenção à diferença entre visualizar e validar:** o navegador acessa o servidor por meio do encaminhamento do Codespaces e recebe um certificado da infraestrutura do GitHub para `app.github.dev`, não o certificado de `agenda.caisazul.test`. A página aberta confirma o acesso à aplicação, mas não comprova a validade da cadeia criada no laboratório.
 
-Confira a conexão TLS:
+Por isso, volte ao **primeiro terminal**, dentro de `trabalho/`, e valide diretamente a conexão TLS com o servidor do laboratório:
 
 ```bash
 openssl s_client -connect 127.0.0.1:8443 -servername agenda.caisazul.test \
@@ -324,11 +321,13 @@ openssl s_client -connect 127.0.0.1:8443 -servername agenda.caisazul.test \
   -verify_return_error -brief < /dev/null
 ```
 
-**Checkpoint 7 — HTTPS funcionando:** o acesso sem `--cacert` deve falhar por falta de confiança; com `--cacert raiz.crt`, deve aparecer a página de status. O `openssl s_client` deve mostrar **`Verification: OK`**, sem erro de conexão ou de certificado.
+**Checkpoint 7 — Página acessível e certificado validado:** a página de status do OpenSSL deve aparecer no navegador pelo endereço encaminhado da porta **8443**. No primeiro terminal, o `openssl s_client` deve mostrar **`Verification: OK`**, sem erro de conexão ou de certificado. A opção `-CAfile raiz.crt` indica explicitamente a raiz confiável para essa validação.
 
-**Colete agora a evidência 2 — HTTPS:** com o servidor ainda rodando no segundo terminal, salve uma captura do primeiro terminal mostrando o comando `openssl s_client` acima e seu resultado `Verification: OK`. Guarde a imagem antes de encerrar o servidor.
+**Colete agora a evidência 2 — HTTPS:** com o servidor ainda rodando no segundo terminal, organize duas janelas lado a lado: a página de status no navegador, com o endereço encaminhado visível, e o Codespace, com o primeiro terminal mostrando o comando `openssl s_client` acima e seu resultado `Verification: OK`. Salve **uma única captura** com os dois resultados legíveis. Guarde a imagem antes de encerrar o servidor.
 
 A raiz está incluída na cadeia extraída do PFX, mas enviá-la pelo servidor não cria confiança no cliente: ele precisa confiar nela previamente. Em servidores reais, normalmente se enviam apenas o certificado do site e as intermediárias.
+
+Referência: [encaminhamento de portas e uso de HTTPS no GitHub Codespaces](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace#using-https-forwarding).
 
 ### Etapa 8 — Registrar a realização e encerrar
 
@@ -337,7 +336,7 @@ Envie as **duas capturas já coletadas** na **equipe do Teams da disciplina**, n
 | Evidência | Momento da coleta | Conteúdo |
 |---|---|---|
 | 1 — Cadeia e PFX | Final da etapa 6 | Comandos de validação e inspeção, `site.crt: OK` e informações do PFX |
-| 2 — HTTPS | Final da etapa 7, antes de encerrar o servidor | Comando `openssl s_client` e `Verification: OK` |
+| 2 — HTTPS | Final da etapa 7, antes de encerrar o servidor | Uma captura com a página de status e seu endereço no navegador, ao lado do comando `openssl s_client` e de `Verification: OK` no terminal |
 
 Antes de enviar, confira que as duas imagens estão legíveis e não mostram senhas ou chaves privadas. Envie somente as capturas, sem anexar arquivos `.key`, `.pfx` ou `.p12`. Os checkpoints servem para acompanhar a execução; não exigem respostas nem imagens adicionais.
 
